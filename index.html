@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    
+    <style>
+      body,html {
+        height: 100%;       
+      }
+
+      #arena {
+        position: relative;
+      }
+
+      #hospital {
+        position: absolute;
+        bottom: 50px;
+        left: 10px;
+        width: 200px;
+        height: 200px;
+      }
+
+      .patient {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position-x: center;
+        background-position-y: center;
+      }
+
+      .patient.ill {
+        background-image: url('ill.svg');
+      }
+
+      .patient.healthy {
+        background-image: url('healthy.svg');
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <div class="container d-flex h-100 flex-column border border-5 rounded">
+      <div class="row flex-grow-1 user-select-none">
+        <div id="arena" class="col overflow-hidden">
+          <img id="hospital" src="hospital.svg">        
+        </div>
+      </div>
+      <div id="statusBar" class="row justify-content-between border-top border-5">
+        <div class="col day text-center">          
+        </div>
+        <div class="col d-flex flex-column justify-content-center">
+          <div class="progress position-relative">
+            <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+            <small class="levelProgress justify-content-center d-flex position-absolute w-100"></small>
+          </div>
+        </div>
+        <div class="col time text-center">
+        </div>
+      </div>
+    </div>
+
+    <div id="welcomeModal" class="modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Welcome!</h5>            
+          </div>
+          <div class="modal-body">
+            <p>
+              This is a simple game to visualize exponential growth. Your job is quite easy:
+              <ul>
+                <li>Click on the hospital to <i>treat</i> a sick emoji</li>
+                <li>The number of sick emojis doubles after every two (simulated) days</li>
+                <li>The time that you have for each iteration is limited</li>
+              </ul>
+            </p>
+            <p>
+              <button type="button" class="btn btn-primary w-100">Let's go</button>
+            </p>
+            <p>
+              <small>Disclaimer: This game is neither meant to be scientifically accurate nor to simulate a real Covid19 infection rate. It's sole purpose is to demonstrate the impact of exponential growth.</small>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="newGameModal" class="modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Choose your level!</h5>            
+          </div>
+          <div class="modal-body">
+            <p class="text-center">
+              <button type="button" class="easy btn btn-success w-100">Easy</button>
+            </p>
+            <p class="text-center">
+              <button type="button" class="medium btn btn-warning w-100"">Medium</button>
+            </p>
+            <p class="text-center">
+              <button type="button" class="hard btn btn-danger w-100"">Hard</button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <div id="lostModal" class="modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">You lost!</h5>            
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger" role="alert">
+              You lost the <i>race against time</i>.
+            </div>
+            <p>
+              <button type="button" class="btn btn-primary w-100">New Game</button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="levelSuccessModal" class="modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Great!</h5>            
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-success" role="alert">              
+            </div>
+            <p>
+              <button type="button" class="btn btn-primary w-100">Go on</button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>    
+  </body>
+
+  <footer>
+    <script>
+      var CoronaExpoGame = (function () {
+        // C O N S T A N T S
+
+        var DAYS_PER_LEVEL = 2;
+
+        var PATIENT_DIM = {
+          width: 60,
+          height: 60
+        };
+        var HOSPITAL_POS = {
+          left: 10,
+          right: 250,
+          top: 230,
+          bottom: 50,
+        }
+        var PATIENT_HOSPITAL_POS = {
+          left: 85,
+          bottom: 50
+        };
+
+        // G A M E S T A T E
+
+        var state = {
+          level: undefined,
+          patientIdx: undefined,
+          levelStart: undefined,
+          maxTime: undefined,
+          timer: undefined
+        };
+
+        var precalcPatientPos = [];
+
+        // G A M E F U N C T I O N S
+
+        function updateStatusBar() {
+          $('#statusBar .day').empty().append('Day: ' + ((state.level) * DAYS_PER_LEVEL + 1));
+          var nrHealthy = state.patientIdx;
+          var nrTotal = 1 << state.level;
+          $('#statusBar .levelProgress').empty().append(nrHealthy + ' / ' + nrTotal);
+          $('#statusBar .progress-bar').css('width', (nrHealthy / nrTotal * 100) + '%')
+          updateTime();
+        }
+
+        function updateTime() {
+          var msLeft = Math.max(0, state.maxTime - (new Date().getTime() - state.levelStart));
+          var nLeft = Math.floor(msLeft / 60000)
+          var sLeft = Math.floor((msLeft % 60000) / 1000);
+          var hsLeft = Math.floor((msLeft % 1000) / 10);  
+          $('#statusBar .time').empty().append(nLeft + ':' + (sLeft < 10 ? '0' : '') + sLeft + ':' + (hsLeft < 10 ? '0' : '') + hsLeft);
+          return msLeft > 0;
+        }
+
+        function createPatient(pos) {
+          var $patient = $('<div class="patient ill"></div>');
+          $('#arena').append($patient);
+          setPatientPosition($patient, pos, false);
+          return $patient;
+        }
+
+        function initPrecalcPatientPos() {
+          precalcPatientPos = [];
+          var offset = 0;
+          var arenaWidth = $('#arena').innerWidth();
+          var arenaHeight = $('#arena').innerHeight();
+          for (var y = HOSPITAL_POS.bottom; y < arenaHeight; y += PATIENT_DIM.height) {
+            var x = y > HOSPITAL_POS.top ? HOSPITAL_POS.left + offset : HOSPITAL_POS.right + offset;
+            for (; x + PATIENT_DIM.width <= arenaWidth; x += PATIENT_DIM.width) {
+              precalcPatientPos.push({
+                left: x,
+                bottom: y
+              });
+            }
+            y += PATIENT_DIM.height;
+            x -= PATIENT_DIM.width;
+            for (; x >= (y > HOSPITAL_POS.top ? HOSPITAL_POS.left + offset : HOSPITAL_POS.right + offset); x -= PATIENT_DIM.width) {
+              precalcPatientPos.push({
+                left: x,
+                bottom: y
+              });
+            }
+            //offset += 1;
+          }          
+        }
+
+        function setPatientPosition($patient, pos, animate) {
+          var bottom = (pos == 0 ? PATIENT_HOSPITAL_POS.bottom : precalcPatientPos[pos - 1].bottom) + 'px';
+          var left = (pos == 0 ? PATIENT_HOSPITAL_POS.left : precalcPatientPos[pos - 1].left) + 'px';
+          
+          if (animate) {
+            $patient.animate({
+              left: left,
+              bottom: bottom
+            }, {
+              durdation: 1000
+            });
+          }
+          else {
+            $patient.css({
+              left: left,
+              bottom: bottom
+            });
+          }
+        }
+
+
+        $(window).resize(function() {
+          onResize();
+        });
+        function onResize() {
+          initPrecalcPatientPos();
+          $('.patient').remove();
+          for (var i = 0; i < Math.min(precalcPatientPos.length, (1 << state.level) - state.patientIdx); i++) {
+            createPatient(i);
+          }
+        }
+
+
+        function initLevel(level) {
+          state.level = level;
+          state.patientIdx = 0;
+          state.levelStart = new Date().getTime();
+          
+          if (state.timer) {
+            clearInterval(state.timer);
+          }
+
+          var timerFunc = function() {
+            if (updateTime()) {
+              state.timer = window.setTimeout(timerFunc, 25)
+            }
+            else {
+              onLost();
+            }
+          }
+          timerFunc();
+          
+          updateStatusBar();
+
+          $('.patient').remove();
+          for (var i = 0; i < Math.min(1 << level, precalcPatientPos.length + 1); i++) {
+            $patient = createPatient(i);
+            if (i == 0) {
+              $patient.addClass('inhospital');
+            }
+          }
+        }
+
+        $('#arena').on('click', function () {
+          onPatientHealthy();
+        });
+        function onPatientHealthy() {
+          $('.patient.ill').finish().each(function (idx, el) {
+            var $patient = $(el);
+            if (idx == 0) {
+              $patient.removeClass('ill');
+              $patient.addClass('healthy');
+              $patient.animate({left: '-100'}, {
+                complete: function() {
+                  $patient.remove();
+                }
+              });              
+            }
+            else {
+              setPatientPosition($patient, idx - 1, true);
+            }
+          });
+
+          state.patientIdx++;
+          updateStatusBar();
+          if (state.patientIdx < (1 << state.level)) {
+            var patientsLeft = (1 << state.level) - state.patientIdx;
+            if (patientsLeft >= precalcPatientPos.length + 1) {
+              var $patient = createPatient(precalcPatientPos.length);
+            }
+          }
+          else {
+            // level finished
+            onLevelSuccess();
+          }
+        }
+
+
+        // L E V E L S U C C E S S
+
+        var levelSuccessModal 
+        var levelSuccessModal = new bootstrap.Modal($('#levelSuccessModal'), {
+          backdrop: 'static'
+        });
+        $('#levelSuccessModal .btn').on('click', function() {
+          levelSuccessModal.hide();
+          initLevel(state.level + 1);
+        });
+
+        function onLevelSuccess() {
+          clearInterval(state.timer);
+          state.timer = null;
+          $('#levelSuccessModal .alert').empty().append('You reached day ' + ((state.level + 1) * DAYS_PER_LEVEL + 1));
+          levelSuccessModal.show();
+        }
+
+
+        // L O S T
+
+        var lostModal = new bootstrap.Modal($('#lostModal'), {
+          backdrop: 'static'
+        });
+        $('#lostModal .btn').on('click', function() {
+          lostModal.hide();
+          newGame();
+        });
+
+        function onLost() {
+          lostModal.show();
+        }
+
+        // N E W   G A M E
+
+        function startGame(timeout) {
+          newGameModal.hide();
+          state = {
+            level: 0,
+            maxTime: timeout
+          }
+          initLevel(state.level);          
+        }
+
+        function newGame() {
+          newGameModal.show();
+        }        
+
+        var newGameModal = new bootstrap.Modal($('#newGameModal'), {
+          backdrop: 'static'
+        });
+        $('#newGameModal .easy').on('click', function () {
+          startGame(5 * 60 * 1000);
+        });
+        $('#newGameModal .medium').on('click', function () {
+          startGame(1 * 60 * 1000);
+        });
+        $('#newGameModal .hard').on('click', function () {
+          startGame(1 * 30 * 1000);
+        });
+
+        // W E L C O M E
+        function showWelcome() {
+          welcomeModal.show();
+        }
+
+        var welcomeModal = new bootstrap.Modal($('#welcomeModal'), {
+          backdrop: 'static'
+        });
+        $('#welcomeModal .btn').on('click', function() {
+          welcomeModal.hide();
+          newGame();
+        });
+
+
+        // I N I T
+        return {
+          init: function() {
+            initPrecalcPatientPos();
+            showWelcome();
+          }
+        }
+      })();
+
+      $(document).ready(function () {
+        CoronaExpoGame.init();
+      });
+    </script>
+  </footer>
+</html>
