@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
@@ -74,22 +74,31 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Welcome!</h5>            
+            <h5 class="modal-title i18n_welcome_title">Welcome!</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownLang" data-bs-toggle="dropdown">
+                Lang
+              </button>
+              <ul class="dropdown-menu"">
+                <li><a class="dropdown-item" href="?en">EN</a></li>
+                <li><a class="dropdown-item" href="?de">DE</a></li>
+              </ul>
+            </div>         
           </div>
           <div class="modal-body">
             <p>
-              This is a simple game to visualize exponential growth wrt. Corona/Covid19. Your job is quite easy:
+              <span class="i18n_welcome_body">This is a simple click game to visualize exponential growth wrt. Corona/Covid19. Your job is quite easy:</span>
               <ul>
-                <li>Click on the hospital to <i>treat</i> a sick emoji</li>
-                <li>The number of sick emojis doubles after every two (simulated) days</li>
-                <li>The time that you have for each iteration is limited</li>
+                <li class="i18n_welcome_instruction1">Click on the hospital to <i>treat</i> a sick emoji</li>
+                <li class="i18n_welcome_instruction2">The number of sick emojis doubles after every two (simulated) days</li>
+                <li class="i18n_welcome_instruction3">The time that you have for each iteration is limited</li>
               </ul>
             </p>
             <p>
-              <button type="button" class="btn btn-primary w-100">Let's go</button>
+              <button type="button" class="btn btn-primary w-100 goon i18n_welcome_goon">Let's go</button>
             </p>
             <p>
-              <small>Disclaimer: This game is neither meant to be scientifically accurate nor to simulate a real Corona/Covid19 infection rate. It's sole purpose is to demonstrate the impact of exponential growth.</small>
+              <small class="i18n_welcome_disclaimer">Disclaimer: This game is neither meant to be scientifically accurate nor to simulate a real Corona/Covid19 infection rate. It's sole purpose is to demonstrate the impact of exponential growth.</small>
             </p>
           </div>
         </div>
@@ -100,17 +109,17 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Choose your level!</h5>            
+            <h5 class="modal-title i18n_newgame_title">Choose your level!</h5>            
           </div>
           <div class="modal-body">
             <p class="text-center">
-              <button type="button" class="easy btn btn-success w-100">Easy</button>
+              <button type="button" class="easy btn btn-success w-100 i18n_newgame_easy">Easy</button>
             </p>
             <p class="text-center">
-              <button type="button" class="medium btn btn-warning w-100"">Medium</button>
+              <button type="button" class="medium btn btn-warning w-100 i18n_newgame_medium">Medium</button>
             </p>
             <p class="text-center">
-              <button type="button" class="hard btn btn-danger w-100"">Hard</button>
+              <button type="button" class="hard btn btn-danger w-100 i18n_newgame_hard">Hard</button>
             </p>
           </div>
         </div>
@@ -121,14 +130,14 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Game Over!</h5>            
+            <h5 class="modal-title i18n_lost_title">Game Over!</h5>            
           </div>
           <div class="modal-body">
-            <div class="alert alert-danger" role="alert">
+            <div class="alert alert-danger i18n_lost_body" role="alert">
               You lost the <i>race against time</i>.
             </div>
             <p>
-              <button type="button" class="btn btn-primary w-100">New Game</button>
+              <button type="button" class="btn btn-primary w-100 i18n_lost_newgame">New Game</button>
             </p>
           </div>
         </div>
@@ -139,13 +148,13 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Great!</h5>            
+            <h5 class="modal-title i18n_success_title">Great!</h5>            
           </div>
           <div class="modal-body">
             <div class="alert alert-success" role="alert">              
             </div>
             <p>
-              <button type="button" class="btn btn-primary w-100">Go on</button>
+              <button type="button" class="btn btn-primary w-100 i18n_success_goon">Go on</button>
             </p>
           </div>
         </div>
@@ -186,6 +195,71 @@
         };
 
         var precalcPatientPos = [];
+
+        // I 1 8 N
+
+        var I18N = {
+          'de': {
+            'i18n_title': 'Ein einfaches Klick-Spiel zur Visualisierung von exponentiellem Wachstum im Bezug auf Corona/Covid19',
+            'i18n_welcome_title': 'Hallo!',
+            'i18n_welcome_body': 'Dies ist ein einfaches Klick-Spiel zur Visualisierung von exponentiellem Wachstum im Bezug auf Corona/Covid19. Deine Aufabe ist recht leicht:',
+            'i18n_welcome_instruction1': 'Klicke auf das Krankenhaus, um einen kranken Emoji zu behandeln',
+            'i18n_welcome_instruction2': 'Die Anzahl der Emojis verdoppelt sich in jeder Runde',
+            'i18n_welcome_instruction3': 'Die Zeit pro Runde ist begrenzt',
+            'i18n_welcome_disclaimer': 'Hinweis: Der Anspruch dieses Spiels ist es nicht wissenschaftlich exakt zu sein oder eine tatsächliche Infektionsrate von Corona/Covid19 zu simulieren. Dieses Spiel soll lediglich expontentielles Wachstum im Zusammenhang mit Corona/Covid19 visualisieren.',
+            'i18n_welcome_goon': 'Weiter',
+            'i18n_newgame_title': 'Schwierigkeitsgrad',
+            'i18n_newgame_easy': 'Einfach',
+            'i18n_newgame_medium': 'Mittel',
+            'i18n_newgame_hard': 'Schwer',
+            'i18n_lost_title': 'Game Over',
+            'i18n_lost_body': 'Du hast das Rennen gegen die Zeit verloren',
+            'i18n_lost_newgame': 'Neues Spiel',
+            'i18n_success_title': 'Super',
+            'i18n_success_body': 'Du hast Tag %1 erreicht',
+            'i18n_success_goon': 'Weiter!'
+          },
+          'en': {
+            'i18n_success_body': 'You reached day %1',
+          }
+        };
+
+        function detectLang() {
+          var lang = window.location.search;
+          
+          if (lang) {
+            if (lang.length > 2) {
+              lang = lang.substring(1);
+            }
+          }
+          else {
+            var splitIdx = navigator.language.indexOf('-');
+            lang = splitIdx >= 0 ? navigator.language.substring(0, splitIdx) : navigator.language;            
+          }
+          if (I18N[lang]) {
+            return lang;
+          }
+          else {
+            return 'en';
+          }
+        }
+        var lang = detectLang();
+
+        function getMsg(key, arg1) {
+          return I18N[lang][key].replace('%1', arg1);          
+        }
+
+        function initStaticLabels() {
+          for (var key in I18N[lang]) {
+            if (I18N[lang].hasOwnProperty(key)) {
+              $('.' + key).empty().append(I18N[lang][key]);
+            }
+          }
+          if (I18N[lang]['i18n_title']) {
+            $('title').empty().append('CoronaExpo: ' + I18N[lang]['i18n_title']);
+            $("meta[name='description']").attr("content", I18N[lang]['i18n_title']);
+          }
+        }
 
         // G A M E F U N C T I O N S
 
@@ -351,7 +425,7 @@
         function onLevelSuccess() {
           clearInterval(state.timer);
           state.timer = null;
-          $('#levelSuccessModal .alert').empty().append('You reached day ' + ((state.level + 1) * DAYS_PER_LEVEL + 1));
+          $('#levelSuccessModal .alert').empty().append(getMsg('i18n_success_body', ((state.level + 1) * DAYS_PER_LEVEL + 1)));
           levelSuccessModal.show();
         }
 
@@ -406,15 +480,17 @@
         var welcomeModal = new bootstrap.Modal($('#welcomeModal'), {
           backdrop: 'static'
         });
-        $('#welcomeModal .btn').on('click', function() {
+        $('#welcomeModal .btn.goon').on('click', function() {
           welcomeModal.hide();
           newGame();
         });
+        $('#welcomeModal .dropdown-toggle').empty().append(lang.toUpperCase());
 
 
         // I N I T
         return {
           init: function() {
+            initStaticLabels();
             initPrecalcPatientPos();
             showWelcome();
           }
