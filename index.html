@@ -217,10 +217,12 @@
             'i18n_lost_newgame': 'Neues Spiel',
             'i18n_success_title': 'Super',
             'i18n_success_body': 'Du hast Tag %1 erreicht',
-            'i18n_success_goon': 'Weiter!'
+            'i18n_success_goon': 'Weiter!',
+            'i18n_game_day': 'Tag'
           },
           'en': {
             'i18n_success_body': 'You reached day %1',
+            'i18n_game_day': 'Day'
           }
         };
 
@@ -264,7 +266,7 @@
         // G A M E F U N C T I O N S
 
         function updateStatusBar() {
-          $('#statusBar .day').empty().append('Day: ' + ((state.level) * DAYS_PER_LEVEL + 1));
+          $('#statusBar .day').empty().append(getMsg('i18n_game_day') + ': ' + ((state.level) * DAYS_PER_LEVEL + 1));
           var nrHealthy = state.patientIdx;
           var nrTotal = 1 << state.level;
           $('#statusBar .levelProgress').empty().append(nrHealthy + ' / ' + nrTotal);
